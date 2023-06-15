@@ -12,11 +12,14 @@ using namespace cv;
 int main()
 {
 	Mat image = Mat::zeros(500, 500, CV_8UC3);
-
 	circle(image, Point(250, 150), 100, Scalar(0, 255, 128), -100);
 	circle(image, Point(350, 150), 100, Scalar(255, 255, 255), -100);
 
-	Filter filter = Filter();
-	filter.accuracy_experiment(image);
-}
+	int kernel_size = 3;
+	Mat kernel = Mat::ones(kernel_size, kernel_size, CV_32F) / (float)(kernel_size * kernel_size);
 
+	int border_type = BORDER_CONSTANT;
+
+	Filter filter = Filter();
+	filter.experiment(image, kernel, border_type, "result.png");
+}
