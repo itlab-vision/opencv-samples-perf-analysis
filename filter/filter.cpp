@@ -74,7 +74,7 @@ int proccesArgument(int argc, char* argv[], string& image_path,
     return 0;
 }
 
-Mat vector_to_mat(const vector<vector<float>>& kernel);
+Mat vector_to_mat(const vector<vector<float>>& kernel)
 {
     Mat opencv_kernel(kernel.size(), kernel[0].size(), CV_32F);
 
@@ -88,7 +88,7 @@ Mat vector_to_mat(const vector<vector<float>>& kernel);
     return opencv_kernel;
 }
 
-Mat parse_kernel_from_txt(const string& kernel_path);
+Mat parse_kernel_from_txt(const string& kernel_path)
 {
     fstream newfile;
     std::stringstream stream("");
