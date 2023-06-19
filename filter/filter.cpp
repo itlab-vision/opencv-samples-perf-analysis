@@ -13,7 +13,7 @@ const char* helper =
 \t<image_path> is a file name contained the source image (3-channel, RGB)\n\
 \t<kernel_path> is a file name in the txt-format that stores the kernel\n\
 \t<x> is an anchor x coordinate\n\
-\t<y> is an anchor x coordinate\
+\t<y> is an anchor x coordinate\n\
 \t<border_type> is a border type: 0 = BORDER_CONSTANT, 1 = BORDER_REPLICATE, 2 = BORDER_REFLECT.\n\
 \t<output_path> is an output file name.\n\
 ";
