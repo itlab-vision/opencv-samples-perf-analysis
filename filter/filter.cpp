@@ -9,7 +9,7 @@ using namespace std;
 using namespace cv;
 
 const char* helper =
-"./filter <image_path> <kernel_path> <x> <y> <border_type> <output_path>\
+"./filter <image_path> <kernel_path> <x> <y> <border_type> <output_path>\n\
 \t<image_path> is a file name contained the source image (3-channel, RGB).\n\
 \t<kernel_path> is a file name in the txt-format that stores the kernel.\n\
 \t<x> is an anchor x coordinate.\n\
