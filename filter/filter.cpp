@@ -24,7 +24,7 @@ int proccesArgument(int argc, char* argv[], string& image_path,
 
 Mat parse_kernel_from_txt(const string& kernel_path);
 
-float filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
+double filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
            int border_type, const string& output_name);
 
 
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     Mat dst;
     Mat kernel = parse_kernel_from_txt(kernel_path);
 
-    float elapsed_seconds = filter(image, dst, kernel, anchor,
+    double elapsed_seconds = filter(image, dst, kernel, anchor,
                                  border_type, output_path);
 
     imwrite(output_path, dst);
@@ -115,7 +115,7 @@ Mat parse_kernel_from_txt(const string& kernel_path)
     return kernel;
 }
 
-float filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
+double filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
            int border_type, const string& output_name)
 {
     auto start = std::chrono::steady_clock::now();
