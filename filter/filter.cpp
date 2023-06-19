@@ -14,20 +14,17 @@ const char* helper =
 \t<kernel_path> is a file name in the txt-format that stores the kernel\n\
 \t<x> is an anchor x coordinate\n\
 \t<y> is an anchor x coordinate\
-\t<border_type> is a border type (???).\n\
+\t<border_type> is a border type: 0 = BORDER_CONSTANT, 1 = BORDER_REPLICATE, 2 = BORDER_REFLECT.\n\
 \t<output_path> is an output file name.\n\
 ";
-
 
 int proccesArgument(int argc, char* argv[], string& image_path,
                     string& kernel_path, int& x, int& y, int& border_type,
                     string& output_path);
 
-Mat vector_to_mat(const vector<vector<float>>& kernel);
-
 Mat parse_kernel_from_txt(const string& kernel_path);
 
-int filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
+float filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
            int border_type, const string& output_name);
 
 
@@ -47,8 +44,9 @@ int main(int argc, char* argv[])
     Mat dst;
     Mat kernel = parse_kernel_from_txt(kernel_path);
 
-    int elapsed_seconds = filter(image, dst, kernel, anchor,
+    float elapsed_seconds = filter(image, dst, kernel, anchor,
                                  border_type, output_path);
+
     imwrite(output_path, dst);
     std::cout << "elapsed time: " << elapsed_seconds << "s\n";
 
@@ -74,53 +72,50 @@ int proccesArgument(int argc, char* argv[], string& image_path,
     return 0;
 }
 
-Mat vector_to_mat(const vector<vector<float>>& kernel)
-{
-    Mat opencv_kernel(kernel.size(), kernel[0].size(), CV_32F);
-
-    for (int i = 0; i < kernel.size(); i++)
-    {
-        for (int j = 0; j < kernel[i].size(); j++)
-        {
-            opencv_kernel.at<float>(i, j) = kernel[i][j];
-        }
-    }
-    return opencv_kernel;
-}
-
 Mat parse_kernel_from_txt(const string& kernel_path)
 {
     fstream newfile;
     std::stringstream stream("");
 
-    vector<vector<float>> kernel;
-
-    vector<float> row;
     string file_line;
     float value;
+    int rows, cols;
+
+    Mat kernel;
 
     newfile.open(kernel_path, ios::in);
     if (newfile.is_open())
     {
-        while (getline(newfile, file_line))
+        getline(newfile, file_line);
+        stream.clear();
+        stream.str(file_line);
+        stream >> value;
+        rows = (int)value;
+
+        getline(newfile, file_line);
+        stream.clear();
+        stream.str(file_line);
+        stream >> value;
+        cols = (int)value;
+
+        kernel.create(rows, cols, CV_32F);
+        for (int i = 0; i < rows; i++)
         {
+            getline(newfile, file_line);
             stream.clear();
             stream.str(file_line);
-
-            while (stream >> value)
-                row.push_back(value);
-
-            kernel.push_back(row);
-            row.clear();
+            for (int j = 0; j < cols; j++)
+            {
+                stream >> value;
+                kernel.at<float>(i, j) = value;
+            }
         }
         newfile.close();
     }
-
-    Mat opencv_kernel = vector_to_mat(kernel);
-    return opencv_kernel;
+    return kernel;
 }
 
-int filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
+float filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
            int border_type, const string& output_name)
 {
     auto start = std::chrono::steady_clock::now();
