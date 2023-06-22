@@ -10,14 +10,14 @@ using namespace cv;
 
 const char* helper =
 "./resize <image_path> <width> <height> <interpolation> <output_path>\n\
-\t<image_path> -  is a file name contained the source image, must be 3 - channel, RGB - image.\n\
-\t<width> -  is a resulting image width.\n\
-\t<height> -  is a resulting image height.\n\
-\t<interpolation> - is a interpolation algorithm:\n\
+\t<image_path> is a file name contained the source image, must be 3 - channel, RGB - image.\n\
+\t<width> is a resulting image width.\n\
+\t<height> is a resulting image height.\n\
+\t<interpolation> is a interpolation algorithm:\n\
 \t\t 0 = INTER_NEAREST, 1 = INTER_LINEAR, 2 = INTER_CUBIC, 3 = INTER_AREA, 4 = INTER_LANCZOS4,\n\
 \t\t 5 = INTER_LINEAR_EXACT, 6 = INTER_NEAREST_EXACT, 7 = INTER_MAX, 8 = WARP_FILL_OUTLIERS,\n\
 \t\t 16 = WARP_INVERSE_MAP.\n\
-\t<output_path> - is a output file name.\n\
+\t<output_path> is a output file name.\n\
 ";
 
 int proccesArgument(int argc, char* argv[], string& image_path, int& width, int& height,
