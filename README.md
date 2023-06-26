@@ -12,12 +12,27 @@ analysis on RISC-V. Samples implemented using the well-known
   samples.
 - `filter` is a directory that contains sample for `filter2D` function.
 - `resize` is a directory that contains sample for `resize` function.
-- `svm` is a directory that contains sample of image classification using
-  Support Vector Machine implemented in OpenCV.
+- `bow` is a directory that contains sample of image classification using
+  bag-of-words approach and Support Vector Machine implemented in OpenCV.
 - `nn` is a directory that contains sample of deep neural network inference
   using the OpenCV library.
 
-## How to build OpenCV on RISC-V
+## How to build OpenCV to run on RISC-V
+
+We build OpenCV on Ubuntu installed on Windows.
+
+The GCC compiler is available [here][compiler]
+(riscv64-linux-x86_64-20210618.tar.gz). It is required to extract
+the archive and update environment variable `PATH`.
+
+```
+tar -xzf riscv64-linux-x86_64-20210618.tar.gz 
+GCC_PATH=/home/user/riscv64-linux-x86_64
+export PATH=$GCC_PATH/bin:${PATH}
+riscv64-unknown-linux-gnu-gcc --version
+```
+
+To build OpenCV for executing on RISC-V, please, follow instructions below.
 
 ```bash
 cd /home/user
@@ -48,7 +63,9 @@ make -j
 make install
 ```
 
-## How to build samples
+## How to build samples to run on RISC-V
+
+We build samples on the same computer where OpenCV was build.
 
 ```bash
 mkdir perf-samples
@@ -66,7 +83,7 @@ make -j
 cd /bin
 ```
 
-## How to run
+## How to run on RISC-V
 
 ```bash
 ./filter ../../opencv-samples-perf-analysis/data/filter/forest.jpg \ 
@@ -76,3 +93,4 @@ cd /bin
 
 <!-- LINKS -->
 [opencv]: https://opencv.org
+[compiler]: https://disk.yandex.ru/d/64TVJ6xxZcIMkA
