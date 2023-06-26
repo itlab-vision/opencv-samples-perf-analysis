@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <regex>
 #include <math.h>
 
 #include <opencv2/opencv.hpp>
