@@ -88,7 +88,7 @@ cd /bin
 ```bash
 ./filter ../../opencv-samples-perf-analysis/data/filter/forest.jpg \ 
          ../../opencv-samples-perf-analysis/data/filter/kernel.txt \
-         0 0 forest_filtered.jpg
+         0 0 0 forest_filtered.jpg
 ```
 
 <!-- LINKS -->
