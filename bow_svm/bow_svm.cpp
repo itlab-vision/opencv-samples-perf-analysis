@@ -1,201 +1,205 @@
 #include <iostream>
 #include <fstream>
 #include <opencv2/opencv.hpp>
+#include <opencv2/features2d.hpp>
 #include <opencv2/ml.hpp>
+
+#include "CifarReader.h"
 
 using namespace std;
 using namespace cv;
 using namespace cv::ml;
 using namespace chrono;
 
-#include <opencv2/opencv.hpp>
-
-using namespace cv;
-
-
 const char* helper =
-"./bow_svm <task_type> <data_dir> <svm_file> <vocabulary_file> <output_file>\n\
-\t<task_type> - is a task type: <train>, <inference>\n\
-\t<data_dir> - is a directory containing data for task cifar10.\n\
-\t<svm_file> - is a file to load or save svm model.\n\
-\t<vocabulary_file> - is a to load or save vocabulary for BoW.\n\
-\t<output_file> - is a file to save the prediction, if task_type = <inference> (.yml format)\n\
+"./bow_svm <task_type> <data_dir> <dataset> <svm_file> <vocabulary_file>\
+<vocabulary_size> <detector_type> <descriptor_type> <output_file>\n\
+\t<task_type> is a task type: <train>, <inference>\n\
+\t<data_dir> is a directory containing data.\n\
+\t<dataset> is a string containing one of the supported datasets: <cifar10>.\n\
+\t<svm_file> is a file to load or save svm model.\n\
+\t<vocabulary_file> is a file to load or save vocabulary for BoW.\n\
+\t<vocabulary_size> is a size of vocabulary, only if task_type = <train>\n\
+\t<detector_type> is a type detector.\n\
+\t<descriptor_type> is a type descriptor.\n\
+\t<output_file> is a file to save the prediction, if task_type = <inference> (.yml format)\n\
 ";
 
-int trainProccesArgument(int argc, char* argv[], string& data_dir, string& svm_file,
-                         string& vocabulary_file);
+int trainProccesArgument(int argc, char* argv[], string& data_dir, string& dataset, 
+                         string& svm_file, string& vocabulary_file, int& vocabulary_size, 
+                         string& detector_type, string& descriptor_type);
 
-int inferenceProccesArgument(int argc, char* argv[], string& data_dir, string& svm_file,
-                             string& vocabulary_file, string& output_file);
+int inferenceProccesArgument(int argc, char* argv[], string& data_dir, string& dataset,
+                             string& svm_file, string& vocabulary_file, 
+                             string& detector_type, string& descriptor_type, 
+                             string& output_file);
 
-int read_bin_data(int start_index, string filename, vector<Mat>& images, Mat& labels);
+void get_keypoints(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints, 
+                   Ptr<Feature2D> detector);
 
-int load_data(string data_dir, map<string, int> filenames, vector<Mat>& images, Mat& labels);
+void get_keypoints_and_descriptors(const vector<Mat>& images, 
+                                   vector<vector<KeyPoint>>& keypoints, 
+                                   vector<Mat>& descriptors, Ptr<Feature2D> detector);
 
-void get_keypoints(vector<Mat>& images, vector<vector<KeyPoint>>& keypoints);
+void create_vocabulary(Mat& vocabulary, const vector<vector<KeyPoint>>& keypoints,
+                       const vector<Mat>& descriptors, int vocabulary_size);
 
-void get_keypoints_and_descriptors(vector<Mat>& images, vector<vector<KeyPoint>>& keypoints, 
-                                   vector<Mat>& descriptors);
-
-void create_vocabulary(Mat& vocabulary, vector<vector<KeyPoint>>& keypoints,
-                       vector<Mat>& descriptors, int vocabulary_size);
-
-void get_features(vector<Mat>& images, vector<vector<KeyPoint>>& keypoints,
-                  Mat& vocabulary, Mat& x_data);
+void get_features(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints,
+                  const Mat& vocabulary, Mat& x_data, Ptr<Feature2D> descriptor);
 
 void train_svm(Mat train_data, Mat& labels, Ptr<SVM>& svm);
 
-void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file, string vocabulary_file);
+void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file, 
+                          string vocabulary_file);
 
-void predict(Ptr<SVM>& svm, Mat train_data, vector<int>& pred);
+void predict(const Ptr<SVM>& svm, const Mat& train_data, vector<int>& pred);
 
-void train(string data_dir, string svm_file, string vocabulary_file);
+void train(const string& data_dir, BaseReader* const& reader, const string& svm_file, 
+           const string& vocabulary_file, int vocabulary_size,
+           Ptr<Feature2D> detector, Ptr<Feature2D> descriptor);
 
-void inference(string data_dir, string svm_file, string vocabulary_file, string output_file);
+void inference(const string& data_dir, BaseReader* const& reader, 
+               const string& svm_file, const string& vocabulary_file,
+               const string& output_file, Ptr<Feature2D> detector, 
+               Ptr<Feature2D> descriptor);
 
 int main(int argc, char* argv[]) 
 {
-    string task_type, data_dir, svm_file, vocabulary_file, output_file;
+    string task_type, data_dir, dataset, svm_file, vocabulary_file, output_file;
+    string detector_type, descriptor_type;
+    int vocabulary_size;
+
+    const map<string, Ptr<Feature2D>> m = {
+        {"SIFT", SIFT::create()}, {"ORB", ORB::create()}, 
+        {"BRISK", BRISK::create()}, {"MSER", MSER::create()},
+        {"AKAZE", AKAZE::create()}, {"KAZE", KAZE::create()},
+    };
+
+    const map<string, BaseReader*> readers = {
+        {"cifar10", new CifarReader()}
+    };
+
+    if (argc < 2 || !(string(argv[1]) == "train" || string(argv[1]) == "inference"))
+    {
+        cout << helper << endl;
+        return 1;
+    }
 
     if (string(argv[1]) == "train")
     {
-        if (trainProccesArgument(argc, argv, data_dir, svm_file, vocabulary_file) != 0)
+        if (trainProccesArgument(argc, argv, data_dir, dataset, svm_file, vocabulary_file, 
+                vocabulary_size, detector_type, descriptor_type) != 0)
         {
             cout << helper << endl;
             return 1;
         }
+        Ptr<Feature2D> detector = m.at(detector_type);
+        Ptr<Feature2D> descriptor = m.at(descriptor_type);
 
-        train(data_dir, svm_file, vocabulary_file);
+        BaseReader* reader = readers.at(dataset);
+
+        train(data_dir, reader, svm_file, vocabulary_file, 
+            vocabulary_size, detector, descriptor);
     }
 
     if (string(argv[1]) == "inference")
     {
-        if (inferenceProccesArgument(argc, argv, data_dir, svm_file, 
-                                     vocabulary_file, output_file) != 0)
+        if (inferenceProccesArgument(argc, argv, data_dir, dataset, svm_file, 
+                vocabulary_file, detector_type, descriptor_type, output_file) != 0)
         {
             cout << helper << endl;
             return 1;
         }
+        Ptr<Feature2D> detector = m.at(detector_type);
+        Ptr<Feature2D> descriptor = m.at(descriptor_type);
 
-        inference(data_dir, svm_file, vocabulary_file, output_file);
+        BaseReader* reader = readers.at(dataset);
+
+        inference(data_dir, reader, svm_file, vocabulary_file, 
+            output_file, detector, descriptor);
     }
 
     return 0;
 }
 
 
-int trainProccesArgument(int argc, char* argv[], string& data_dir, string& svm_file,
-    string& vocabulary_file)
+int trainProccesArgument(int argc, char* argv[], string& data_dir, 
+                         string& dataset, string& svm_file,
+                         string& vocabulary_file, int& vocabulary_size, 
+                         string& detector_type, string& descriptor_type)
 {
-    if (argc < 5)
+    if (argc < 9)
     {
         return 1;
     }
 
     data_dir = argv[2];
-    svm_file = argv[3];
-    vocabulary_file = argv[4];
+    dataset = argv[3];
+    svm_file = argv[4];
+    vocabulary_file = argv[5];
+
+    vocabulary_size = atoi(argv[6]);
+
+    detector_type = argv[7];
+    descriptor_type = argv[8];
 
     return 0;
 }
 
-int inferenceProccesArgument(int argc, char* argv[], string& data_dir, string& svm_file,
-                             string& vocabulary_file, string& output_file)
+int inferenceProccesArgument(int argc, char* argv[], string& data_dir, 
+                             string& dataset, string& svm_file,
+                             string& vocabulary_file, string& detector_type, 
+                             string& descriptor_type, string& output_file)
 {
-    if (argc < 6)
+    if (argc < 9)
     {
         return 1;
     }
 
     data_dir = argv[2];
-    svm_file = argv[3];
-    vocabulary_file = argv[4];
-    output_file = argv[5];
+    dataset = argv[3];
+    svm_file = argv[4];
+    vocabulary_file = argv[5];
+
+    detector_type = argv[6];
+    descriptor_type = argv[7];
+
+    output_file = argv[8];
 
     return 0;
 }
 
-int read_bin_data(int start_index, string filename, vector<Mat>& images, Mat& labels)
+void get_keypoints(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints, 
+                   Ptr<Feature2D> detector)
 {
-    ifstream fs;
-    int data_size = 3073;
-
-    char* read_buffer = new char[data_size];
-
-    fs.open(filename, ios::binary);
-    if (!fs)
-    {
-        cerr << "Failed to open file: " << filename << endl;
-        return -1;
-    }
-
-    for (int i = 0 + start_index; i < labels.rows + start_index; i++) {
-        fs.seekg(i * data_size, ios::beg);
-        fs.read(read_buffer, data_size);
-
-        Mat im(32, 32, CV_8UC3);
-
-        labels.at<int>(i) = (int)read_buffer[0];
-        for (int j = 0; j < 32; j++)
-            for (int k = 0; k < 32; k++)
-            {
-                int b = (int)read_buffer[k + j * 32];
-                int g = (int)read_buffer[k + j * 32 + 32 * 32];
-                int r = (int)read_buffer[k + j * 32 + 32 * 32 * 2];
-                im.at<Vec3b>(j, k) = Vec3b(r, g, b);
-            }                
-        images.push_back(im.clone());
-    }
-}
-
-int load_data(string data_dir, map<string, int> filenames, vector<Mat>& images, Mat& labels)
-{
-    ifstream fs;
-    const int tailleImage = 3073;
-
-    map<string, int>::iterator it = filenames.begin();
-
-    while (it != filenames.end())
-    {
-        if (read_bin_data(it->second, it->first, images, labels) != 0)
-            return -1;
-    }
-}
-
-void get_keypoints(vector<Mat>& images, vector<vector<KeyPoint>>& keypoints)
-{
-    Ptr<SIFT> sift = SIFT::create();
-
     for (int i = 0; i < images.size(); i++)
     {
         vector<KeyPoint> keypoint;
 
-        sift->detect(images[i], keypoint, noArray());
+        detector->detect(images[i], keypoint, noArray());
         keypoints.push_back(vector<KeyPoint>(keypoint));
     }
 }
 
-void get_keypoints_and_descriptors(vector<Mat>& images, vector<vector<KeyPoint>>& keypoints,
-                                   vector<Mat>& descriptors)
+void get_keypoints_and_descriptors(const vector<Mat>& images, 
+                                   vector<vector<KeyPoint>>& keypoints,
+                                   vector<Mat>& descriptors, Ptr<Feature2D> detector)
 {
-    Ptr<SIFT> sift = SIFT::create();
-
     for (int i = 0; i < images.size(); i++)
     {
         vector<KeyPoint> keypoint;
         Mat descriptor;
 
-        sift->detectAndCompute(images[i], noArray(), keypoint, descriptor);
+        detector->detectAndCompute(images[i], noArray(), keypoint, descriptor);
         keypoints.push_back(vector<KeyPoint>(keypoint));
         descriptors.push_back(descriptor.clone());
     }
 }
 
-void create_vocabulary(Mat& vocabulary, vector<vector<KeyPoint>>& keypoints,
-                       vector<Mat>& descriptors, int vocabulary_size)
+void create_vocabulary(Mat& vocabulary, const vector<vector<KeyPoint>>& keypoints,
+                       const vector<Mat>& descriptors, int vocabulary_size)
 {
-    TermCriteria termCriteria(cv::TermCriteria::EPS + TermCriteria::COUNT, 10, 1.0);
-    BOWKMeansTrainer bow(vocabulary_size, termCriteria, 1, KMEANS_PP_CENTERS);
+    BOWKMeansTrainer bow(vocabulary_size);
 
     for (auto& descriptor : descriptors)
     {
@@ -205,12 +209,11 @@ void create_vocabulary(Mat& vocabulary, vector<vector<KeyPoint>>& keypoints,
     vocabulary = bow.cluster();
 }
 
-void get_features(vector<Mat>& images, vector<vector<KeyPoint>>& keypoints,
-                  Mat& vocabulary, Mat& x_data)
+void get_features(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints,
+                  const Mat& vocabulary, Mat& x_data, Ptr<Feature2D> descriptor)
 {
-    Ptr<SIFT> sift = SIFT::create();
     Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("FlannBased");
-    BOWImgDescriptorExtractor dextract(sift, matcher);
+    BOWImgDescriptorExtractor dextract(descriptor, matcher);
 
     dextract.setVocabulary(vocabulary);
 
@@ -230,16 +233,14 @@ void train_svm(Mat train_data, Mat& labels, Ptr<SVM>& svm)
 {
     svm = SVM::create();
 
-    svm->setC(100);
-
-    svm->setType(SVM::C_SVC);
     svm->setKernel(SVM::RBF);
     svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));
 
     svm->train(train_data, ROW_SAMPLE, labels);
 }
 
-void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file, string vocabulary_file)
+void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file, 
+                          string vocabulary_file)
 {
     FileStorage fs(vocabulary_file, FileStorage::WRITE);
     fs << "vocabulary" << vocabulary;
@@ -248,7 +249,7 @@ void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file, string
     svm->save(svm_file);
 }
 
-void predict(Ptr<SVM>& svm, Mat train_data, vector<int>& pred)
+void predict(const Ptr<SVM>& svm, const Mat& train_data, vector<int>& pred)
 {
     for (int i = 0; i < train_data.rows; i++)
     {
@@ -257,16 +258,12 @@ void predict(Ptr<SVM>& svm, Mat train_data, vector<int>& pred)
     }
 }
 
-void train(string data_dir, string svm_file, string vocabulary_file)
+void train(const string& data_dir, BaseReader* const& reader, const string& svm_file, 
+           const string& vocabulary_file, int vocabulary_size,
+           Ptr<Feature2D> detector, Ptr<Feature2D> descriptor)
 {
     vector<Mat> images;
-    Mat labels(10000, 1, CV_32SC1);
-
-    map<string, int> filenames = {
-        {data_dir + "data_batch_1.bin", 0}, {data_dir + "data_batch_2.bin", 10000},
-        {data_dir + "data_batch_3.bin", 20000}, {data_dir + "data_batch_4.bin", 30000},
-        {data_dir + "data_batch_5.bin", 40000}
-    };
+    Mat labels;
 
     Mat x_data;
 
@@ -276,24 +273,26 @@ void train(string data_dir, string svm_file, string vocabulary_file)
     Mat vocabulary;
     Ptr<SVM> svm;
 
-    load_data(data_dir, filenames, images, labels);
-    get_keypoints_and_descriptors(images, keypoints, descriptors);
-    create_vocabulary(vocabulary, keypoints, descriptors, 1024);
+    reader->load_train_data(data_dir, images, labels);
+    get_keypoints_and_descriptors(images, keypoints, descriptors, detector);
+    create_vocabulary(vocabulary, keypoints, descriptors, vocabulary_size);
 
-    get_features(images, keypoints, vocabulary, x_data);
+    get_features(images, keypoints, vocabulary, x_data, descriptor);
     train_svm(x_data, labels, svm);
 
     save_train_artifacts(svm, vocabulary, svm_file, vocabulary_file);
 }
 
-void inference(string data_dir, string svm_file, string vocabulary_file, string output_file)
+void inference(const string& data_dir, BaseReader* const& reader, 
+               const string& svm_file, const string& vocabulary_file,
+               const string& output_file, Ptr<Feature2D> detector, 
+               Ptr<Feature2D> descriptor)
 {
-    map<string, int> filenames = { {data_dir + "test_batch.bin", 0} };
     vector<Mat> images;
-    Mat labels(10000, 1, CV_32SC1);
+    Mat labels;
     Mat x_data;
 
-    load_data(data_dir, filenames, images, labels);
+    reader->load_test_data(data_dir, images, labels);
 
     Ptr<SVM> svm = Algorithm::load<ml::SVM>(svm_file);
 
@@ -304,8 +303,8 @@ void inference(string data_dir, string svm_file, string vocabulary_file, string 
 
     vector<vector<KeyPoint>> keypoints;
     vector<Mat> descriptors;
-    get_keypoints(images, keypoints);
-    get_features(images, keypoints, vocabulary, x_data);
+    get_keypoints(images, keypoints, detector);
+    get_features(images, keypoints, vocabulary, x_data, descriptor);
 
     vector<int> outputs;
     predict(svm, x_data, outputs);
