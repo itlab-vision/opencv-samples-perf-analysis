@@ -85,7 +85,7 @@ cd /bin
 
 ## How to run on RISC-V
 
-### Filtering
+### Filtering (filter)
 
 ```bash
 ./filter ../../opencv-samples-perf-analysis/data/filter/forest.jpg \ 
@@ -107,7 +107,7 @@ cd /bin
 
 1. The border type `0` corresponds to the constant border.
 
-### Resizing
+### Resizing (resize)
 
 ```bash
 ./resize ../../opencv-samples-perf-analysis/data/resize/forest.jpg \
@@ -119,7 +119,7 @@ cd /bin
 1. `100x100` corresponds to the new size.
 1. `0` corresponds nearest neighbor interpolation.
 
-# nn
+### Neural network inference (nn)
 
 ```bash
 ./nn alexnet_deploy.prototxt bvlc_alexnet.caffemodel \
