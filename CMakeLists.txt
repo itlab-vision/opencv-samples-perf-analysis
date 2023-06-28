@@ -29,7 +29,7 @@ set(DEPENDENCIES ${OpenCV_LIBS})
 add_subdirectory(filter)
 add_subdirectory(resize)
 # add_subdirectory(bow_svm)
-# add_subdirectory(nn)
+add_subdirectory(nn)
 
 # REPORT
 message(STATUS "")
