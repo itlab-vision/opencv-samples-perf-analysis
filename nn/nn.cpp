@@ -96,8 +96,6 @@ int main(int argc, char* argv[]) {
 
     std::cout << "convert time: " << total_convert_time << " s\n";
     std::cout << "inference time: " << total_inference_time << " s\n";
-    std::cout << "inference time per image: "
-              << total_inference_time / fn.size() << " s\n";
 
     double latency = find_median(batch_times);
     double average_time = find_average(batch_times);
