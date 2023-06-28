@@ -88,9 +88,14 @@ cd /bin
 ```bash
 ./filter ../../opencv-samples-perf-analysis/data/filter/forest.jpg \ 
          ../../opencv-samples-perf-analysis/data/filter/kernel.txt \
-         0 0 0 forest_filtered.jpg
+         -1 -1 0 forest_filtered.jpg
 ```
-
+anchor \<x> \<y>. The value (-1, -1) corresponds to the center. Example for filter 3x3:  
+|   |   |   |
+|---|---|---|
+| 0, 0 | 0, 1 | 0, 2 |
+| 1, 0 | 1, 1 | 1, 2 |
+| 2, 0 | 2, 1 | 2, 2 |
 ```bash
 ./resize ../../opencv-samples-perf-analysis/data/forest.jpg \
          100 100 0 forest_resized.png
