@@ -23,7 +23,7 @@ const char* helper =
 int proccesArgument(int argc, char* argv[], string& image_path, int& width, int& height,
                     int& interpolation, string& output_path);
 
-double resize(const Mat& image, Mat& dst, Size size, int interpolation, 
+double resize(const Mat& image, Mat& dst, const Size& size, int interpolation, 
               const string& output_name);
 
 
@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
     imwrite(output_path, dst);
 
     std::cout << "elapsed time: " << elapsed_seconds << "s\n";
+    return 0;
 }
 
 int proccesArgument(int argc, char* argv[], string& image_path, int& x, int& y, 
@@ -65,7 +66,7 @@ int proccesArgument(int argc, char* argv[], string& image_path, int& x, int& y,
     return 0;
 }
 
-double resize(const Mat& image, Mat& dst, Size size, int interpolation, 
+double resize(const Mat& image, Mat& dst, const Size& size, int interpolation, 
               const string& output_name)
 {
     auto start = std::chrono::steady_clock::now();
