@@ -13,7 +13,7 @@ double find_median(vector<double> times)
 
 double find_average(const vector<double>& times)
 {
-    double sum = 0;
+    double sum = 0.0;
     for (int i = 0; i < times.size(); ++i)
     {
         sum += times[i];

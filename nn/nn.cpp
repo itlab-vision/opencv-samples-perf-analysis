@@ -60,8 +60,8 @@ int main(int argc, char* argv[]) {
     double scale_factor;
 
     if (proccesArgument(argc, argv, model_file, model_config, dataset_path,
-            batch_size, scale_factor, width, height,
-            intensity_r, intensity_g, intensity_b, labels) != 0)
+                        batch_size, scale_factor, width, height,
+                        intensity_r, intensity_g, intensity_b, labels) != 0)
     {
         cout << helper << endl;
         return 1;
@@ -84,8 +84,9 @@ int main(int argc, char* argv[]) {
     Net model = load_model(model_file, model_config);
 
     inference(model, outputs, batch_size, fn, batch_times, 
-        total_convert_time, total_inference_time,
-        scale_factor, width, height, intensity_r, intensity_g, intensity_b);
+              total_convert_time, total_inference_time,
+              scale_factor, width, height, 
+              intensity_r, intensity_g, intensity_b);
 
     print_result(fn, outputs);
 
