@@ -1,4 +1,4 @@
-set(SAMPLE_FILENAME "nn.cpp")
+set(SAMPLE_FILENAME nn.cpp)
 
 # get file name without extension
 get_filename_component(sample ${SAMPLE_FILENAME} NAME_WE)
