@@ -121,6 +121,8 @@ cd /bin
 
 ### Neural network inference (nn)
 
+#### AlexNet
+
 ```bash
 ./nn alexnet_deploy.prototxt bvlc_alexnet.caffemodel \
      ../../opencv-samples-perf-analysis/data/nn/ \
@@ -144,6 +146,7 @@ probability: [0.89906287, 0.027598409, 0.020923723, 0.0196473, 0.0062733875]
 class: 625
 ```
 
+#### GoogleNet
 
 ```bash
 ./nn googlenet.prototxt bvlc_googlenet.caffemodel \
