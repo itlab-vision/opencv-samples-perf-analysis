@@ -20,8 +20,8 @@ const char* helper =
 \t<svm_file> is a file to load or save svm model.\n\
 \t<vocabulary_file> is a file to load or save vocabulary for BoW.\n\
 \t<vocabulary_size> is a size of vocabulary, only if task_type = <train>\n\
-\t<detector_type> is a type detector.\n\
-\t<descriptor_type> is a type descriptor.\n\
+\t<detector_type> is a type detector: <SIFT>, <ORB>, <BRISK>, <MSER>, <AKAZE>, <KAZE>\n\
+\t<descriptor_type> is a type descriptor: <SIFT>, <ORB>, <BRISK>, <MSER>, <AKAZE>, <KAZE>\n\
 \t<output_file> is a file to save the prediction, if task_type = <inference> (.yml format)\n\
 ";
 
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     string detector_type, descriptor_type;
     int vocabulary_size;
 
-    const map<string, Ptr<Feature2D>> m = {
+    const map<string, Ptr<Feature2D>> name_to_2dfeatures = {
         {"SIFT", SIFT::create()}, {"ORB", ORB::create()}, 
         {"BRISK", BRISK::create()}, {"MSER", MSER::create()},
         {"AKAZE", AKAZE::create()}, {"KAZE", KAZE::create()},
@@ -88,35 +88,36 @@ int main(int argc, char* argv[])
     if (string(argv[1]) == "train")
     {
         if (trainProccesArgument(argc, argv, data_dir, dataset, svm_file, vocabulary_file, 
-                vocabulary_size, detector_type, descriptor_type) != 0)
+                                 vocabulary_size, detector_type, descriptor_type) != 0)
         {
             cout << helper << endl;
             return 1;
         }
-        Ptr<Feature2D> detector = m.at(detector_type);
-        Ptr<Feature2D> descriptor = m.at(descriptor_type);
+        Ptr<Feature2D> detector = name_to_2dfeatures.at(detector_type);
+        Ptr<Feature2D> descriptor = name_to_2dfeatures.at(descriptor_type);
 
         BaseReader* reader = readers.at(dataset);
 
         train(data_dir, reader, svm_file, vocabulary_file, 
-            vocabulary_size, detector, descriptor);
+              vocabulary_size, detector, descriptor);
     }
 
     if (string(argv[1]) == "inference")
     {
         if (inferenceProccesArgument(argc, argv, data_dir, dataset, svm_file, 
-                vocabulary_file, detector_type, descriptor_type, output_file) != 0)
+                                     vocabulary_file, detector_type, 
+                                     descriptor_type, output_file) != 0)
         {
             cout << helper << endl;
             return 1;
         }
-        Ptr<Feature2D> detector = m.at(detector_type);
-        Ptr<Feature2D> descriptor = m.at(descriptor_type);
+        Ptr<Feature2D> detector = name_to_2dfeatures.at(detector_type);
+        Ptr<Feature2D> descriptor = name_to_2dfeatures.at(descriptor_type);
 
         BaseReader* reader = readers.at(dataset);
 
         inference(data_dir, reader, svm_file, vocabulary_file, 
-            output_file, detector, descriptor);
+                  output_file, detector, descriptor);
     }
 
     return 0;
@@ -233,8 +234,11 @@ void train_svm(Mat train_data, Mat& labels, Ptr<SVM>& svm)
 {
     svm = SVM::create();
 
+    const int max_count = 100;
+    const double epsilon = 1e-6;
+
     svm->setKernel(SVM::RBF);
-    svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, 100, 1e-6));
+    svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, max_count, epsilon));
 
     svm->train(train_data, ROW_SAMPLE, labels);
 }
