@@ -129,7 +129,7 @@ cd /bin
 
 **Notes:**
 
-1. AlexNet can be downloaded here ([alexnet.prototxt], [alexnet])
+1. AlexNet can be downloaded here ([alexnet.prototxt][alexnet-prototxt], [alexnet])
 1. Output looks as follows:
 
 ```
@@ -153,7 +153,7 @@ class: 625
 
 **Notes:**
 
-1. GoogleNet can be downloaded here ([googlenet.prototxt], [googlenet]).
+1. GoogleNet can be downloaded here ([googlenet.prototxt][googlenet-prototxt], [googlenet]).
 1. Output looks as follows: 
 
 ```
