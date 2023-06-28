@@ -101,6 +101,54 @@ anchor \<x> \<y>. The value (-1, -1) corresponds to the center. Example for filt
          100 100 0 forest_resized.png
 ```
 
+# nn
+
+```bash
+./nn alexnet_deploy.prototxt bvlc_alexnet.caffemodel \
+     ../../opencv-samples-perf-analysis/data/nn/ \
+     256 1 224 224 104 117 123 output.yml
+```
+
+model can be download [alexnet.prototxt], [alexnet]
+
+output: 
+
+image: ../../opencv-samples-perf-analysis/data/nn/ILSVRC2012_val_00000023.JPEG
+probability: [0.99829763, 0.00056126592, 0.0003486975, 6.7908339e-05, 6.555381e-05]
+class: 948
+image: ../../opencv-samples-perf-analysis/data/nn/ILSVRC2012_val_00000247.JPEG
+probability: [0.99999547, 4.3205505e-06, 2.8146468e-07, 2.0098549e-08, 1.2273974e-08]
+class: 13
+image: ../../opencv-samples-perf-analysis/data/nn/ILSVRC2012_val_00018592.JPEG
+probability: [0.89906287, 0.027598409, 0.020923723, 0.0196473, 0.0062733875]
+class: 625
+
+```bash
+./nn googlenet.prototxt bvlc_googlenet.caffemodel \
+     ../../opencv-samples-perf-analysis/data/nn/ \
+     256 1 224 224 104 117 123 output.yml
+```
+
+model can be download [googlenet.prototxt], [googlenet]
+
+output: 
+
+image: ../../opencv-samples-perf-analysis/data/nn/LSVRC2012_val_00000023.JPEG
+probability: [0.99829763, 0.00056126592, 0.0003486975, 6.7908339e-05, 6.555381e-05]
+class: 948
+image: ../../opencv-samples-perf-analysis/data/nn/ILSVRC2012_val_00000247.JPEG
+probability: [0.99999547, 4.3205505e-06, 2.8146468e-07, 2.0098549e-08, 1.2273974e-08]
+class: 13
+image: ../../opencv-samples-perf-analysis/data/nn/ILSVRC2012_val_00018592.JPEG
+probability: [0.89906287, 0.027598409, 0.020923723, 0.0196473, 0.0062733875]
+class: 625
+
 <!-- LINKS -->
 [opencv]: https://opencv.org
 [compiler]: https://disk.yandex.ru/d/64TVJ6xxZcIMkA
+
+[alexnet.prototxt]: https://raw.githubusercontent.com/BVLC/caffe/88c96189bcbf3853b93e2b65c7b5e4948f9d5f67/models/bvlc_alexnet/deploy.prototxt  
+[alexnet]: https://storage.openvinotoolkit.org/repositories/open_model_zoo/public/2022.1/alexnet/bvlc_alexnet.caffemodel  
+
+[googlenet.prototxt]: https://raw.githubusercontent.com/BVLC/caffe/88c96189bcbf3853b93e2b65c7b5e4948f9d5f67/models/bvlc_googlenet/deploy.prototxt  
+[googlenet]: https://storage.openvinotoolkit.org/repositories/open_model_zoo/public/2022.1/googlenet-v1/bvlc_googlenet.caffemodel 
