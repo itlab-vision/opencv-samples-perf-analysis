@@ -91,6 +91,11 @@ cd /bin
          0 0 0 forest_filtered.jpg
 ```
 
+```bash
+./resize ../../opencv-samples-perf-analysis/data/forest.jpg \
+         100 100 0 forest_resized.png
+```
+
 <!-- LINKS -->
 [opencv]: https://opencv.org
 [compiler]: https://disk.yandex.ru/d/64TVJ6xxZcIMkA
