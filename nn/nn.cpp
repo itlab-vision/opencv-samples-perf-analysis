@@ -53,8 +53,8 @@ void inference(Net& model, Mat& outputs, int batch_size,
 
 void print_result(const vector<String>& fn, Mat outputs);
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char* argv[]) 
+{
     string model_file, model_config, dataset_path, labels;
     int batch_size, width, height, intensity_r, intensity_g, intensity_b;
     double scale_factor;
