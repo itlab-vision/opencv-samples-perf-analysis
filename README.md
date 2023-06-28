@@ -96,15 +96,14 @@ cd /bin
 **Notes:**
 
 1. The anchor value (-1, -1) corresponds to the kernel center.
-   Example for the kernel size 3x3:  
+   Example for the kernel size 3x3 (Ox is a horizontal axis,
+   Oy is a vertical axis):
 
+| x, y | x, y | x, y |
 |------|------|------|
 | 0, 0 | 0, 1 | 0, 2 |
-|------|------|------|
 | 1, 0 | 1, 1 | 1, 2 |
-|------|------|------|
 | 2, 0 | 2, 1 | 2, 2 |
-|------|------|------|
 
 1. The border type `0` corresponds to the constant border.
 
