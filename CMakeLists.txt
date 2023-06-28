@@ -27,7 +27,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 set(DEPENDENCIES ${OpenCV_LIBS})
 
 add_subdirectory(filter)
-# add_subdirectory(resize)
+add_subdirectory(resize)
 # add_subdirectory(bow_svm)
 # add_subdirectory(nn)
 
