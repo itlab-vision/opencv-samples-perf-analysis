@@ -12,7 +12,7 @@ analysis on RISC-V. Samples implemented using the well-known
   samples.
 - `filter` is a directory that contains sample for `filter2D` function.
 - `resize` is a directory that contains sample for `resize` function.
-- `bow` is a directory that contains sample of image classification using
+- `bow_svm` is a directory that contains sample of image classification using
   bag-of-words approach and Support Vector Machine implemented in OpenCV.
 - `nn` is a directory that contains sample of deep neural network inference
   using the OpenCV library.
@@ -119,6 +119,20 @@ cd /bin
 1. `100x100` corresponds to the new size.
 1. `0` corresponds nearest neighbor interpolation.
 
+### Bag Of Words With SVM (bow_svm)
+
+
+```bash
+./bow_svm train cifar-10-batches-bin/ cifar10 svm.xml \ 
+          vocabulary.yml 32 SIFT SIFT  
+./bow_svm inference cifar-10-batches-bin/ cifar10 svm.xml \ 
+          vocabulary.yml 32 SIFT SIFT output.yml
+```
+
+**Notes:**
+
+1. Сifar10 can be downloaded here [cifar]
+
 ### Neural network inference (nn)
 
 #### AlexNet
@@ -179,3 +193,4 @@ class: 625
 [alexnet]: https://storage.openvinotoolkit.org/repositories/open_model_zoo/public/2022.1/alexnet/bvlc_alexnet.caffemodel
 [googlenet-prototxt]: https://raw.githubusercontent.com/BVLC/caffe/88c96189bcbf3853b93e2b65c7b5e4948f9d5f67/models/bvlc_googlenet/deploy.prototxt
 [googlenet]: https://storage.openvinotoolkit.org/repositories/open_model_zoo/public/2022.1/googlenet-v1/bvlc_googlenet.caffemodel
+[cifar]: https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz
