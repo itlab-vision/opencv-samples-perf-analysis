@@ -119,7 +119,7 @@ cd /bin
 1. `100x100` corresponds to the new size.
 1. `0` corresponds nearest neighbor interpolation.
 
-### Bag Of Words With SVM (bow_svm)
+### Bag-of-words with Support Vector Machine (bow_svm)
 
 #### Train
 
