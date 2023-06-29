@@ -121,17 +121,23 @@ cd /bin
 
 ### Bag Of Words With SVM (bow_svm)
 
+#### Train
 
 ```bash
-./bow_svm train cifar-10-batches-bin/ cifar10 svm.xml \ 
-          vocabulary.yml 32 SIFT SIFT  
-./bow_svm inference cifar-10-batches-bin/ cifar10 svm.xml \ 
+./bow_svm train cifar-10-batches-bin/ cifar10 svm.xml \
+          vocabulary.yml 32 SIFT SIFT
+```
+
+#### Test (inference)
+
+```bash
+./bow_svm inference cifar-10-batches-bin/ cifar10 svm.xml \
           vocabulary.yml 32 SIFT SIFT output.yml
 ```
 
 **Notes:**
 
-1. Сifar10 can be downloaded here [cifar]
+1. Сifar10 can be downloaded [here][cifar10].
 
 ### Neural network inference (nn)
 
@@ -193,4 +199,4 @@ class: 625
 [alexnet]: https://storage.openvinotoolkit.org/repositories/open_model_zoo/public/2022.1/alexnet/bvlc_alexnet.caffemodel
 [googlenet-prototxt]: https://raw.githubusercontent.com/BVLC/caffe/88c96189bcbf3853b93e2b65c7b5e4948f9d5f67/models/bvlc_googlenet/deploy.prototxt
 [googlenet]: https://storage.openvinotoolkit.org/repositories/open_model_zoo/public/2022.1/googlenet-v1/bvlc_googlenet.caffemodel
-[cifar]: https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz
+[cifar-10]: https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz
