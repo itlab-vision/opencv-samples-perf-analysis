@@ -31,6 +31,8 @@ add_subdirectory(resize)
 add_subdirectory(bow_svm)
 add_subdirectory(nn)
 
+add_subdirectory(utils)
+
 # REPORT
 message(STATUS "")
 message(STATUS "General configuration for ${PROJECT_NAME}")
