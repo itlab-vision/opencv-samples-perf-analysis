@@ -111,7 +111,7 @@ cd /bin
 
 ```bash
 ./resize ../../opencv-samples-perf-analysis/data/resize/forest.jpg \
-         100 100 0 forest_resized.png
+         100 100 0 forest_resized.jpg
 ```
 
 **Notes:**
