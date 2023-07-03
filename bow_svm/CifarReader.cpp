@@ -5,9 +5,9 @@ void CifarReader::load_train_data(const string& data_dir, vector<Mat>& images, M
     labels.create(50000, 1, CV_32SC1);
 
     map<string, int> filenames = {
-        {data_dir + "data_batch_1.bin", 0}, {data_dir + "data_batch_2.bin", 10000},
-        {data_dir + "data_batch_3.bin", 20000}, {data_dir + "data_batch_4.bin", 30000},
-        {data_dir + "data_batch_5.bin", 40000}
+        {join(data_dir, "data_batch_1.bin"), 0}, {join(data_dir, "data_batch_2.bin"), 10000},
+        {join(data_dir, "data_batch_3.bin"), 20000}, {join(data_dir, "data_batch_4.bin"), 30000},
+        {join(data_dir, "data_batch_5.bin"), 40000}
     };
     ifstream fs;
     const int tailleImage = 3073;
@@ -25,7 +25,7 @@ void CifarReader::load_test_data(const string& data_dir, vector<Mat>& images, Ma
 {
     labels.create(10000, 1, CV_32SC1);
 
-    map<string, int> filenames = { {data_dir + "test_batch.bin", 0} };
+    map<string, int> filenames = { {join(data_dir, "test_batch.bin"), 0} };
 
     ifstream fs;
     const int tailleImage = 3073;
@@ -67,5 +67,23 @@ void CifarReader::read_bin_data(int start_index, const string& filename,
                 im.at<Vec3b>(j, k) = Vec3b(r, g, b);
             }                
         images.push_back(im.clone());
+    }
+}
+
+string CifarReader::join(const string& p1, const string& p2)
+{
+    char sep = '/';
+    string tmp = p1;
+
+#ifdef _WIN32
+    sep = '\\';
+#endif
+
+    // Add separator if it is not included in the first path:
+    if (p1[p1.length() - 1] != sep) {
+        tmp += sep;
+        return tmp + p2;
+    } else {
+        return p1 + p2;
     }
 }
