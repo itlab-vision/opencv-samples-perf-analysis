@@ -3,7 +3,6 @@
 void CifarReader::load_train_data(const string& data_dir, vector<Mat>& images, Mat& labels)
 {
     labels.create(50000, 1, CV_32SC1);
-
     map<string, int> filenames = {
         {join(data_dir, "data_batch_1.bin"), 0}, {join(data_dir, "data_batch_2.bin"), 10000},
         {join(data_dir, "data_batch_3.bin"), 20000}, {join(data_dir, "data_batch_4.bin"), 30000},
@@ -65,7 +64,7 @@ void CifarReader::read_bin_data(int start_index, const string& filename,
                 int g = (int)read_buffer[k + j * 32 + 32 * 32];
                 int r = (int)read_buffer[k + j * 32 + 32 * 32 * 2];
                 im.at<Vec3b>(j, k) = Vec3b(r, g, b);
-            }                
+            }
         images.push_back(im.clone());
     }
 }
@@ -74,10 +73,6 @@ string CifarReader::join(const string& p1, const string& p2)
 {
     char sep = '/';
     string tmp = p1;
-
-#ifdef _WIN32
-    sep = '\\';
-#endif
 
     // Add separator if it is not included in the first path:
     if (p1[p1.length() - 1] != sep) {
