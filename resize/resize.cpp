@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     double elapsed_seconds = resize(image, dst, size, interpolation, output_path);
     imwrite(output_path, dst);
 
-    std::cout << "elapsed time: " << elapsed_seconds << "s\n";
+    std::cout << "Elapsed time in seconds: " << std::fixed << elapsed_seconds << "\n";
     return 0;
 }
 
