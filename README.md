@@ -134,7 +134,7 @@ cd /bin
 ./bow_svm inference cifar-10-batches-bin/ cifar10 \
           ../../opencv-samples-perf-analysis/test_model/svm.xml \
           ../../opencv-samples-perf-analysis/test_model/vocabulary.yml \
-		  SIFT SIFT output.yml
+          SIFT SIFT output.yml
 ```
 
 **Notes:**
