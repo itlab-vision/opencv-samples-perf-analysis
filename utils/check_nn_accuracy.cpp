@@ -15,7 +15,6 @@ const char* helper =
 
 void metrics_calculation(Mat outputs, Mat labels);
 
-
 int main(int argc, char** argv)
 {
     Mat outputs, labels;
@@ -56,7 +55,6 @@ void metrics_calculation(Mat outputs, Mat labels)
         minMaxLoc(row, nullptr, &maxProb, nullptr, &pos);
         if (pos.x == labels.row(i).at<int>(0)) 
             top1_accuracy++;
-
 
         Mat B;
         sortIdx(row, B, SORT_EVERY_ROW + SORT_DESCENDING);

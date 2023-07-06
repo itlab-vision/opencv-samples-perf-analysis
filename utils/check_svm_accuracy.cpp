@@ -42,6 +42,6 @@ int main(int argc, char** argv)
             number_correct++;
     }
 
-    cout << "accuracy: " << (float)number_correct / outputs.rows;
+    cout << "accuracy: " << (float)number_correct / outputs.rows << endl;
     return 0;
 }
