@@ -204,6 +204,11 @@ class: 625
 ./check_svm_accuracy cifar10 output.yml cifar-10-batches-bin/
 ```
 
+```bash
+./check_nn_accuracy output.yml \
+                    ../../opencv-samples-perf-analysis/data/nn/imagenet_labels_for_caffe_models.txt
+```
+
 <!-- LINKS -->
 [opencv]: https://opencv.org
 [compiler]: https://disk.yandex.ru/d/64TVJ6xxZcIMkA
