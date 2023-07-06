@@ -193,6 +193,16 @@ probability: [0.89906287, 0.027598409, 0.020923723, 0.0196473, 0.0062733875]
 class: 625
 ```
 
+### Utils
+
+```bash
+./diff_images ../../opencv-samples-perf-analysis/data/filter/forest_filtered_x86.jpg \
+              forest_filtered.jpg
+```
+
+```bash
+./check_svm_accuracy cifar10 output.yml cifar-10-batches-bin/
+```
 
 <!-- LINKS -->
 [opencv]: https://opencv.org
