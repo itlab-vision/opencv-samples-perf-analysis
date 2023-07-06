@@ -6,7 +6,7 @@
 #include <opencv2/features2d.hpp>
 #include <opencv2/ml.hpp>
 
-#include "CifarReader.h"
+#include "../reader/CifarReader.h"
 
 using namespace std;
 using namespace cv;
@@ -355,6 +355,5 @@ void inference(const string& data_dir, BaseReader* const& reader,
 
     FileStorage fs_write(output_file, FileStorage::WRITE);
     fs_write << "outputs" << outputs;
-    fs_write << "labels" << labels;
     fs_write.release();
 }

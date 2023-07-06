@@ -34,6 +34,29 @@ void CifarReader::load_test_data(const string& data_dir, vector<Mat>& images, Ma
     read_bin_data(it->second, it->first, images, labels);
 }
 
+void CifarReader::load_test_labels(const string& data_dir, Mat& labels)
+{
+    ifstream fs;
+    string filename = join(data_dir, "test_batch.bin");
+
+    int data_size = 3073;
+    char* read_buffer = new char[1];
+
+    fs.open(filename, ios::binary);
+    if (!fs)
+    {
+        cerr << "Failed to open file: " << filename << endl;
+    }
+
+    labels.create(10000, 1, CV_32SC1);
+    for (int i = 0 ; i < 10000; i++) {
+        fs.seekg(i * data_size, ios::beg);
+        fs.read(read_buffer, 1);
+
+        labels.at<int>(i) = (int)read_buffer[0];
+    }
+}
+
 void CifarReader::read_bin_data(int start_index, const string& filename, 
                                 vector<Mat>& images, Mat& labels)
 {
