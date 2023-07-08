@@ -5,9 +5,9 @@ get_filename_component(sample ${SAMPLE_FILENAME} NAME_WE)
 
 set(SOURCES
   ${SAMPLE_FILENAME}
-  CifarReader.cpp
-  CifarReader.h
-  BaseReader.h
+  ../reader/CifarReader.cpp
+  ../reader/CifarReader.h
+  ../reader/BaseReader.h
 )
 
 # add and configure executable file to be produced 

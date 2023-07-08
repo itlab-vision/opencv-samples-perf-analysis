@@ -111,7 +111,7 @@ cd /bin
 
 ```bash
 ./resize ../../opencv-samples-perf-analysis/data/resize/forest.jpg \
-         100 100 0 forest_resized.png
+         100 100 0 forest_resized.jpg
 ```
 
 **Notes:**
@@ -131,8 +131,10 @@ cd /bin
 #### Test (inference)
 
 ```bash
-./bow_svm inference cifar-10-batches-bin/ cifar10 svm.xml \
-          vocabulary.yml 32 SIFT SIFT output.yml
+./bow_svm inference cifar-10-batches-bin/ cifar10 \
+          ../../opencv-samples-perf-analysis/test_model/svm.xml \
+          ../../opencv-samples-perf-analysis/test_model/vocabulary.yml \
+          SIFT SIFT output.yml
 ```
 
 **Notes:**
@@ -191,6 +193,21 @@ probability: [0.89906287, 0.027598409, 0.020923723, 0.0196473, 0.0062733875]
 class: 625
 ```
 
+### Utils
+
+```bash
+./diff_images ../../opencv-samples-perf-analysis/data/filter/forest_filtered_x86.jpg \
+              forest_filtered.jpg
+```
+
+```bash
+./check_svm_accuracy cifar10 output.yml cifar-10-batches-bin/
+```
+
+```bash
+./check_nn_accuracy output.yml \
+                    ../../opencv-samples-perf-analysis/data/nn/imagenet_labels_for_caffe_models.txt
+```
 
 <!-- LINKS -->
 [opencv]: https://opencv.org
