@@ -16,6 +16,10 @@ analysis on RISC-V. Samples implemented using the well-known
   bag-of-words approach and Support Vector Machine implemented in OpenCV.
 - `nn` is a directory that contains sample of deep neural network inference
   using the OpenCV library.
+- `reader` is a directory that contains implementation of data readers
+  (currently, Cifar-10 data reader is available).
+- `utils` is a directory that contains utilities to check applications
+  correctness.
 
 ## How to build OpenCV to run on RISC-V
 
@@ -132,8 +136,8 @@ cd /bin
 
 ```bash
 ./bow_svm inference cifar-10-batches-bin/ cifar10 \
-          ../../opencv-samples-perf-analysis/test_model/svm.xml \
-          ../../opencv-samples-perf-analysis/test_model/vocabulary.yml \
+          ../../opencv-samples-perf-analysis/data/bow_svm/svm.xml \
+          ../../opencv-samples-perf-analysis/data/bow_svm/vocabulary.yml \
           SIFT SIFT output.yml
 ```
 
@@ -195,14 +199,20 @@ class: 625
 
 ### Utils
 
+#### Check difference between two images (required for filtering and resizing)
+
 ```bash
 ./diff_images ../../opencv-samples-perf-analysis/data/filter/forest_filtered_x86.jpg \
               forest_filtered.jpg
 ```
 
+#### Compute accuracy for SVM classifier
+
 ```bash
 ./check_svm_accuracy cifar10 output.yml cifar-10-batches-bin/
 ```
+
+#### Compute top-1 and top-5 accuracy for NN classifier
 
 ```bash
 ./check_nn_accuracy output.yml \
