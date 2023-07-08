@@ -197,7 +197,7 @@ probability: [0.89906287, 0.027598409, 0.020923723, 0.0196473, 0.0062733875]
 class: 625
 ```
 
-### Utils
+### Utilities (utils)
 
 #### Check difference between two images (required for filtering and resizing)
 
