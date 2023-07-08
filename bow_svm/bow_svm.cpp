@@ -6,7 +6,7 @@
 #include <opencv2/features2d.hpp>
 #include <opencv2/ml.hpp>
 
-#include "../reader/CifarReader.h"
+#include "CifarReader.h"
 
 using namespace std;
 using namespace cv;

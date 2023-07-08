@@ -26,6 +26,8 @@ find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 set(DEPENDENCIES ${OpenCV_LIBS})
 
+set(DATA_READERS "${CMAKE_CURRENT_SOURCE_DIR}/reader")
+
 add_subdirectory(filter)
 add_subdirectory(resize)
 add_subdirectory(bow_svm)
