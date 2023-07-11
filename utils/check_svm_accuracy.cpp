@@ -3,7 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "../reader/CifarReader.h"
+#include "CifarReader.h"
 
 using namespace std;
 using namespace cv;
