@@ -14,34 +14,38 @@ using namespace cv::ml;
 using namespace chrono;
 
 const char* helper =
-"./bow_svm <task_type> <data_dir> <dataset> <svm_file> <svm_type> <kernel> <max_iter>\
-<vocabulary_file> <vocabulary_size> <detector_type> <descriptor_type> <output_file>\n\
+"./bow_svm <task_type> <data_dir> <dataset> <svm_file> <svm_type> <kernel> <degree> <nu>\
+ <max_iter> <vocabulary_file> <vocabulary_size> <detector_type> <descriptor_type> <output_file>\n\
 \t<task_type> is a task type: <train>, <inference>\n\
 \t<data_dir> is a directory containing data.\n\
 \t<dataset> is a string containing one of the supported datasets: <cifar10>.\n\
 \t<svm_file> is a file to load or save svm model.\n\
 \t<svm_type> is a type of a SVM formulation: 100 = C_SVC, 101 = NU_SVC, 102 = ONE_CLASS.\n\
 \t<kernel> is a svm kernel: 0 =  LINEAR, 1 = POLY, 2 = RBF, 3 = SIGMOID, 4 = CHI2, 5 = INTER.\n\
+\t<degree> is a degree for POLY kernel. if kernel is not if the kernel != poly, then do not set\n\
+\t<nu> is a parameter in the range 0..1, the larger the value, the smoother the decision boundary.\n\
+\t\t if svm_type != 101, then do not set\n\
 \t<max_iter> is a maximum number of iterations to compute svm.\n\
 \t<vocabulary_file> is a file to load or save vocabulary for BoW.\n\
 \t<vocabulary_size> is a size of vocabulary, only if task_type = <train>\n\
 \t<detector_type> is a type detector: <SIFT>, <ORB>, <BRISK>, <MSER>, <AKAZE>, <KAZE>\n\
 \t<descriptor_type> is a type descriptor: <SIFT>, <ORB>, <BRISK>, <MSER>, <AKAZE>, <KAZE>\n\
 \t<output_file> is a file to save the prediction, if task_type = <inference> (.yml format)\n\
+\t\t if not set then the result will not be saved\
 ";
 
-int trainProccesArgument(int argc, char* argv[], string& data_dir, 
+int trainProcessArgument(int argc, char* argv[], string& data_dir,
                          string& dataset, string& svm_file,
-                         int& svm_type, int& kernel, int& max_iter,
-                         string& vocabulary_file, int& vocabulary_size, 
+                         int& svm_type, int& kernel, double& degree, double& nu, int& max_iter,
+                         string& vocabulary_file, int& vocabulary_size,
                          string& detector_type, string& descriptor_type);
 
-int inferenceProccesArgument(int argc, char* argv[], string& data_dir, string& dataset,
-                             string& svm_file, string& vocabulary_file, 
-                             string& detector_type, string& descriptor_type, 
+int inferenceProcessArgument(int argc, char* argv[], string& data_dir, string& dataset,
+                             string& svm_file, string& vocabulary_file,
+                             string& detector_type, string& descriptor_type,
                              string& output_file);
 
-void get_keypoints(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints, 
+void get_keypoints(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints,
                    Ptr<Feature2D> detector);
 
 void get_keypoints_and_descriptors(const vector<Mat>& images, 
@@ -55,33 +59,33 @@ void get_features(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints
                   const Mat& vocabulary, Mat& x_data, Ptr<Feature2D> descriptor);
 
 void train_svm(Mat train_data, Mat& labels, Ptr<SVM>& svm, 
-               int svm_type, int kernel, int max_count);
+               int svm_type, int kernel, double degree, double nu, int max_count);
 
-void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file, 
+void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file,
                           string vocabulary_file);
 
 void predict(const Ptr<SVM>& svm, const Mat& train_data, Mat& pred);
 
-void train(const string& data_dir, BaseReader* const& reader, const string& svm_file, 
-           int svm_type, int kernel, int max_iter,
+void train(const string& data_dir, BaseReader* const& reader, const string& svm_file,
+           int svm_type, int kernel, double degree, double nu, int max_iter,
            const string& vocabulary_file, int vocabulary_size,
            Ptr<Feature2D> detector, Ptr<Feature2D> descriptor);
 
-void inference(const string& data_dir, BaseReader* const& reader, 
+void inference(const string& data_dir, BaseReader* const& reader,
                const string& svm_file, const string& vocabulary_file,
-               const string& output_file, Ptr<Feature2D> detector, 
+               const string& output_file, Ptr<Feature2D> detector,
                Ptr<Feature2D> descriptor);
 
-int main(int argc, char* argv[]) 
+int main(int argc, char* argv[])
 {
     string task_type, data_dir, dataset, svm_file, vocabulary_file, output_file;
     string detector_type, descriptor_type;
     int vocabulary_size;
-
+    double degree = 0.0, nu = 0.0;
     int svm_type, kernel, max_iter;
 
     const map<string, Ptr<Feature2D>> name_to_2dfeatures = {
-        {"SIFT", SIFT::create()}, {"ORB", ORB::create()}, 
+        {"SIFT", SIFT::create()}, {"ORB", ORB::create()},
         {"BRISK", BRISK::create()}, {"MSER", MSER::create()},
         {"AKAZE", AKAZE::create()}, {"KAZE", KAZE::create()},
     };
@@ -98,8 +102,8 @@ int main(int argc, char* argv[])
 
     if (string(argv[1]) == "train")
     {
-        if (trainProccesArgument(argc, argv, data_dir, dataset, svm_file, 
-                                 svm_type, kernel, max_iter, vocabulary_file, 
+        if (trainProcessArgument(argc, argv, data_dir, dataset, svm_file,
+                                 svm_type, kernel, degree, nu, max_iter, vocabulary_file,
                                  vocabulary_size, detector_type, descriptor_type) != 0)
         {
             cout << helper << endl;
@@ -110,14 +114,14 @@ int main(int argc, char* argv[])
 
         BaseReader* reader = readers.at(dataset);
 
-        train(data_dir, reader, svm_file, svm_type, kernel, max_iter, 
+        train(data_dir, reader, svm_file, svm_type, kernel, degree, nu, max_iter,
               vocabulary_file, vocabulary_size, detector, descriptor);
     }
 
     if (string(argv[1]) == "inference")
     {
-        if (inferenceProccesArgument(argc, argv, data_dir, dataset, svm_file, 
-                                     vocabulary_file, detector_type, 
+        if (inferenceProcessArgument(argc, argv, data_dir, dataset, svm_file,
+                                     vocabulary_file, detector_type,
                                      descriptor_type, output_file) != 0)
         {
             cout << helper << endl;
@@ -128,7 +132,7 @@ int main(int argc, char* argv[])
 
         BaseReader* reader = readers.at(dataset);
 
-        inference(data_dir, reader, svm_file, vocabulary_file, 
+        inference(data_dir, reader, svm_file, vocabulary_file,
                   output_file, detector, descriptor);
     }
 
@@ -136,41 +140,58 @@ int main(int argc, char* argv[])
 }
 
 
-int trainProccesArgument(int argc, char* argv[], string& data_dir, 
+int trainProcessArgument(int argc, char* argv[], string& data_dir,
                          string& dataset, string& svm_file,
-                         int& svm_type, int& kernel, int& max_iter,
-                         string& vocabulary_file, int& vocabulary_size, 
+                         int& svm_type, int& kernel, double& degree,  double& nu, int& max_iter,
+                         string& vocabulary_file, int& vocabulary_size,
                          string& detector_type, string& descriptor_type)
 {
     if (argc < 12)
     {
         return 1;
     }
+    int k = 2;
 
-    data_dir = argv[2];
-    dataset = argv[3];
-    svm_file = argv[4];
+    data_dir = argv[k]; k++;
 
-    svm_type = atoi(argv[5]);
-    kernel = atoi(argv[6]);
-    max_iter = atoi(argv[7]);
+    dataset = argv[k]; k++;
+    svm_file = argv[k]; k++;
 
-    vocabulary_file = argv[8];
+    svm_type = atoi(argv[k]); k++;
+    kernel = atoi(argv[k]); k++;
 
-    vocabulary_size = atoi(argv[9]);
+    if (kernel == 1)
+    {
+        degree = atof(argv[k]); k++;
+    }
+    if (svm_type == 101)
+    {
+        nu = atof(argv[k]); k++;
+    }
 
-    detector_type = argv[10];
-    descriptor_type = argv[11];
+    int expected_args = 12 + ((kernel == 1) ? 1 : 0) + ((svm_type == 101) ? 1 : 0);
+    if (expected_args != argc)
+    {
+        return 1;
+    }
+
+    max_iter = atoi(argv[k]); k++;
+
+    vocabulary_file = argv[k]; k++;
+    vocabulary_size = atoi(argv[k]); k++;
+
+    detector_type = argv[k]; k++;
+    descriptor_type = argv[k]; k++;
 
     return 0;
 }
 
-int inferenceProccesArgument(int argc, char* argv[], string& data_dir, 
+int inferenceProcessArgument(int argc, char* argv[], string& data_dir,
                              string& dataset, string& svm_file,
-                             string& vocabulary_file, string& detector_type, 
+                             string& vocabulary_file, string& detector_type,
                              string& descriptor_type, string& output_file)
 {
-    if (argc < 9)
+    if (argc < 8)
     {
         return 1;
     }
@@ -183,12 +204,16 @@ int inferenceProccesArgument(int argc, char* argv[], string& data_dir,
     detector_type = argv[6];
     descriptor_type = argv[7];
 
-    output_file = argv[8];
+    output_file = "";
+    if (argc >= 9 && argv[8] != nullptr)
+    {
+        output_file = argv[8];
+    }
 
     return 0;
 }
 
-void get_keypoints(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints, 
+void get_keypoints(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints,
                    Ptr<Feature2D> detector)
 {
     auto start = std::chrono::steady_clock::now();
@@ -205,7 +230,7 @@ void get_keypoints(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoint
     cout << "keypoint detection time: " << elapsed_seconds.count() << "s\n";
 }
 
-void get_keypoints_and_descriptors(const vector<Mat>& images, 
+void get_keypoints_and_descriptors(const vector<Mat>& images,
                                    vector<vector<KeyPoint>>& keypoints,
                                    vector<Mat>& descriptors, Ptr<Feature2D> detector)
 {
@@ -242,7 +267,7 @@ void get_features(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints
     dextract.setVocabulary(vocabulary);
 
     vector<KeyPoint> keypoint;
-    
+
     auto start = std::chrono::steady_clock::now();
     for (int i = 0; i < keypoints.size(); i++)
     {
@@ -260,14 +285,15 @@ void get_features(const vector<Mat>& images, vector<vector<KeyPoint>>& keypoints
 }
 
 void train_svm(Mat train_data, Mat& labels, Ptr<SVM>& svm, 
-               int svm_type, int kernel, int max_count)
+               int svm_type, int kernel, double degree, double nu, int max_count)
 {
     svm = SVM::create();
 
     const double epsilon = 1e-6;
-
     svm->setType(svm_type);
     svm->setKernel(kernel);
+    svm->setDegree(degree);
+    svm->setNu(nu);
     svm->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER, max_count, 1e-6));
 
     auto start = std::chrono::steady_clock::now();
@@ -278,7 +304,7 @@ void train_svm(Mat train_data, Mat& labels, Ptr<SVM>& svm,
     cout << "train time: " << elapsed_seconds.count() << "s\n";
 }
 
-void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file, 
+void save_train_artifacts(Ptr<SVM> svm, Mat& vocabulary, string svm_file,
                           string vocabulary_file)
 {
     FileStorage fs(vocabulary_file, FileStorage::WRITE);
@@ -302,8 +328,8 @@ void predict(const Ptr<SVM>& svm, const Mat& train_data, Mat& pred)
     cout << "predict time: " << elapsed_seconds.count() << "s\n";
 }
 
-void train(const string& data_dir, BaseReader* const& reader, const string& svm_file, 
-           int svm_type, int kernel, int max_iter,
+void train(const string& data_dir, BaseReader* const& reader, const string& svm_file,
+           int svm_type, int kernel, double degree, double nu, int max_iter,
            const string& vocabulary_file, int vocabulary_size,
            Ptr<Feature2D> detector, Ptr<Feature2D> descriptor)
 {
@@ -322,7 +348,7 @@ void train(const string& data_dir, BaseReader* const& reader, const string& svm_
     create_vocabulary(vocabulary, keypoints, descriptors, vocabulary_size);
 
     get_features(images, keypoints, vocabulary, x_data, descriptor);
-    train_svm(x_data, labels, svm, svm_type, kernel, max_iter);
+    train_svm(x_data, labels, svm, svm_type, kernel, degree, nu, max_iter);
 
     save_train_artifacts(svm, vocabulary, svm_file, vocabulary_file);
 }
@@ -353,7 +379,10 @@ void inference(const string& data_dir, BaseReader* const& reader,
     Mat outputs;
     predict(svm, x_data, outputs);
 
-    FileStorage fs_write(output_file, FileStorage::WRITE);
-    fs_write << "outputs" << outputs;
-    fs_write.release();
+    if (!output_file.empty())
+    {
+        FileStorage fs_write(output_file, FileStorage::WRITE);
+        fs_write << "outputs" << outputs;
+        fs_write.release();
+    }
 }

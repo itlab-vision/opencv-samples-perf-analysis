@@ -18,10 +18,12 @@ analysis on RISC-V. Samples implemented using the well-known
   using the OpenCV library.
 - `reader` is a directory that contains implementation of data readers
   (currently, Cifar-10 data reader is available).
-- `utils` is a directory that contains utilities to check applications
-  correctness.
+- `utils` is a directory that contains utilities to check correctness
+  of the developed applications.
+- `scripts` is a directory that contains auxiliary scripts to build
+  and run samples on x86 and RISC-V.
 
-## How to build OpenCV to run on RISC-V
+## How to build OpenCV for RISC-V
 
 We build OpenCV on Ubuntu (for example, installed on Windows).
 
@@ -29,7 +31,7 @@ The GCC compiler is available [here][compiler]
 (riscv64-linux-x86_64-20210618.tar.gz). It is required to extract
 the archive and update environment variable `PATH`.
 
-```
+```bash
 tar -xzf riscv64-linux-x86_64-20210618.tar.gz 
 GCC_PATH=/home/user/riscv64-linux-x86_64
 export PATH=$GCC_PATH/bin:${PATH}
@@ -41,8 +43,8 @@ To build OpenCV for executing on RISC-V, please, follow instructions below.
 ```bash
 cd /home/user
 git clone https://github.com/opencv/opencv.git
-mkdir opencv-build
-cd opencv-build
+mkdir opencv_build
+cd opencv_build
 
 TOOLCHAIN_FILE=../opencv/platforms/linux/riscv64-071-gcc.toolchain.cmake
 
@@ -67,7 +69,13 @@ make -j
 make install
 ```
 
-## How to build samples to run on RISC-V
+**Notes**:
+
+1. Please, use cmake options `WITH_OPENMP`, `WITH_TBB`
+   or `WITH_PTHREADS_PF` to build parallel versions.
+1. Build scripts are located in the directory `scripts\build`.
+
+## How to build samples for RISC-V
 
 We build samples on the same computer where OpenCV was build.
 
@@ -81,11 +89,16 @@ cmake -G "Unix Makefiles" \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_SYSTEM_PROCESSOR=riscv64 \
       -DCMAKE_TOOLCHAIN_FILE=../opencv-samples-perf-analysis/riscv64-071-gcc.toolchain.cmake \
-      -DOpenCV_DIR=/home/user/opencv-build \
+      -DOpenCV_DIR=/home/user/opencv_install \
       ../opencv-samples-perf-analysis
 make -j
 cd /bin
 ```
+
+**Notes**:
+
+1. Please, use cmake option `WITH_OPENMP` to build parallel version.
+1. build scripts are located in the directory `scripts\build`.
 
 ## How to run on RISC-V
 
@@ -123,13 +136,36 @@ cd /bin
 1. `100x100` corresponds to the new size.
 1. `0` corresponds nearest neighbor interpolation.
 
+
+### Erosion (erosion)
+
+```bash
+./erosion ../../opencv-samples-perf-analysis/data/filter/forest.jpg \ 
+        1 -1 -1  1 0 forest_erosion.jpg
+```
+
+**Notes:**
+
+1. The anchor value (-1, -1) corresponds to the kernel center.
+   Example for the kernel size 3x3. erosion_size = 1 (Ox is a horizontal axis,
+   Oy is a vertical axis):
+
+   | x, y | x, y | x, y |
+   |------|------|------|
+   | 0, 0 | 0, 1 | 0, 2 |
+   | 1, 0 | 1, 1 | 1, 2 |
+   | 2, 0 | 2, 1 | 2, 2 |
+
+1. The border type `0` corresponds to the constant border.
+
+
 ### Bag-of-words with Support Vector Machine (bow_svm)
 
 #### Train
 
 ```bash
 ./bow_svm train cifar-10-batches-bin/ cifar10 svm.xml \
-          vocabulary.yml 32 SIFT SIFT
+          100 2 3 0.01 100 vocabulary.yml 32 SIFT SIFT
 ```
 
 #### Test (inference)
@@ -143,7 +179,7 @@ cd /bin
 
 **Notes:**
 
-1. Сifar10 can be downloaded [here][cifar10].
+1. Cifar10 can be downloaded [here][cifar-10].
 
 ### Neural network inference (nn)
 
@@ -206,18 +242,23 @@ class: 625
               forest_filtered.jpg
 ```
 
-#### Compute accuracy for SVM classifier
+#### Compute accuracy for the SVM classifier
 
 ```bash
 ./check_svm_accuracy cifar10 output.yml cifar-10-batches-bin/
 ```
 
-#### Compute top-1 and top-5 accuracy for NN classifier
+#### Compute top-1 and top-5 accuracy for the NN classifier
 
 ```bash
 ./check_nn_accuracy output.yml \
                     ../../opencv-samples-perf-analysis/data/nn/imagenet_labels_for_caffe_models.txt
 ```
+
+## Experiments
+
+Experimental results are available [here][results-table].
+
 
 <!-- LINKS -->
 [opencv]: https://opencv.org
@@ -227,3 +268,4 @@ class: 625
 [googlenet-prototxt]: https://raw.githubusercontent.com/BVLC/caffe/88c96189bcbf3853b93e2b65c7b5e4948f9d5f67/models/bvlc_googlenet/deploy.prototxt
 [googlenet]: https://storage.openvinotoolkit.org/repositories/open_model_zoo/public/2022.1/googlenet-v1/bvlc_googlenet.caffemodel
 [cifar-10]: https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz
+[results-table]: https://docs.google.com/spreadsheets/d/13w7-znPbu2YrrPI1-dvAuvQNzdqk54yIGVGt244uM8I/edit?usp=sharing

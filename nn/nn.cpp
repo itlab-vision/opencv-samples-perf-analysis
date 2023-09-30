@@ -47,13 +47,13 @@ double batch_inference(Net& model, const Mat& blob, Mat& outputs);
 
 void inference(Net& model, Mat& outputs, int batch_size, 
                const vector<String>& fn, vector<double>& batch_times,
-               double& total_convert_time, double& total_inference_time,  
-               double scale_factor, int width, int height, 
+               double& total_convert_time, double& total_inference_time,
+               double scale_factor, int width, int height,
                int intensity_r, int intensity_g, int intensity_b);
 
 void print_result(const vector<String>& fn, Mat outputs);
 
-int main(int argc, char* argv[]) 
+int main(int argc, char* argv[])
 {
     string model_file, model_config, dataset_path, labels;
     int batch_size, width, height, intensity_r, intensity_g, intensity_b;
@@ -90,19 +90,21 @@ int main(int argc, char* argv[])
 
     print_result(fn, outputs);
 
-    cv::FileStorage fs(labels, cv::FileStorage::WRITE);
-    fs << "outputs" << outputs;
-    fs.release();
+    if (!labels.empty())
+    {
+        cv::FileStorage fs(labels, cv::FileStorage::WRITE);
+        fs << "outputs" << outputs;
+        fs.release();
+    }
 
-    std::cout << "convert time: " << total_convert_time << " s\n";
-    std::cout << "inference time: " << total_inference_time << " s\n";
+    std::cout << "Convert time: " << total_convert_time << " s\n";
+    std::cout << "Total inference time: " << total_inference_time << " s\n";
 
     double latency = find_median(batch_times);
     double average_time = find_average(batch_times);
 
-    std::cout << "latency: " << latency << " s\n";
-    std::cout << "average time per batch: " << average_time << " s\n";
-
+    std::cout << "Latency: " << latency << " s\n";
+    std::cout << "Average time per batch: " << average_time << " s\n";
     std::cout << "FPS: " << batch_size / latency << endl;
 
     return 0;
@@ -114,7 +116,7 @@ int proccesArgument(int argc, char* argv[], string& model_file,
                     int& height, int& intensity_r, int& intensity_g,
                     int& intensity_b, string& labels)
 {
-    if (argc < 12)
+    if (argc < 11)
     {
         return 1;
     }
@@ -122,9 +124,7 @@ int proccesArgument(int argc, char* argv[], string& model_file,
     model_file = argv[1];
     model_config = argv[2];
     dataset_path = argv[3];
-    
     batch_size = atoi(argv[4]);
-
     scale_factor = stod(argv[5]);
 
     width = atoi(argv[6]);
@@ -134,7 +134,11 @@ int proccesArgument(int argc, char* argv[], string& model_file,
     intensity_g = atoi(argv[9]);
     intensity_b = atoi(argv[10]);
 
-    labels = argv[11];
+    labels = "";
+    if (argc >= 12 && argv[11] != nullptr)
+    {
+        labels = argv[11];
+    }
 
     return 0;
 }
@@ -215,9 +219,9 @@ void print_result(const vector<String>& fn, Mat outputs)
 {
     for (int i = 0; i < fn.size(); i++)
     {
-        cout << "image: " << fn[i] << endl;
-        double minVal, maxVal;  
-        Point minLoc, maxLoc; 
+        cout << "Image: " << fn[i] << endl;
+        double minVal, maxVal;
+        Point minLoc, maxLoc;
         Mat row = outputs.row(i);
 
         cv::Mat1i idx;
@@ -225,7 +229,7 @@ void print_result(const vector<String>& fn, Mat outputs)
 
         std::sort(row.begin<int>(), row.end<int>(), std::greater<double>());
 
-        cout << "probability: " << row.colRange(0, 5) << endl;
-        cout << "class: " << maxLoc.x << endl;
+        cout << "Probability: " << row.colRange(0, 5) << endl;
+        cout << "Class identifier: " << maxLoc.x << endl;
     }
 }

@@ -15,7 +15,7 @@ const char* helper =
 \t<x> is an anchor x coordinate.\n\
 \t<y> is an anchor x coordinate.\n\
 \t<border_type> is a border type: 0 = BORDER_CONSTANT, 1 = BORDER_REPLICATE, 2 = BORDER_REFLECT.\n\
-\t<output_path> is an output file name.\n\
+\t<output_path> is a output file name, if not set then result will not be saved.\n\
 ";
 
 int proccesArgument(int argc, char* argv[], string& image_path,
@@ -25,7 +25,7 @@ int proccesArgument(int argc, char* argv[], string& image_path,
 Mat parse_kernel_from_txt(const string& kernel_path);
 
 double filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
-              int border_type, const string& output_name);
+              int border_type);
 
 
 int main(int argc, char* argv[])
@@ -43,11 +43,12 @@ int main(int argc, char* argv[])
     Mat image = imread(image_path, IMREAD_COLOR);
     Mat dst;
     Mat kernel = parse_kernel_from_txt(kernel_path);
-
     double elapsed_seconds = filter(image, dst, kernel, anchor,
-                                    border_type, output_path);
+                                    border_type);
 
-    imwrite(output_path, dst);
+    if (!output_path.empty())
+        imwrite(output_path, dst);
+
     std::cout << "elapsed time: " << elapsed_seconds << "s\n";
 
     return 0;
@@ -57,7 +58,7 @@ int proccesArgument(int argc, char* argv[], string& image_path,
                     string& kernel_path, int& x, int& y, int& border_type,
                     string& output_path)
 {
-    if (argc < 7)
+    if (argc < 6)
     {
         return 1;
     }
@@ -67,7 +68,11 @@ int proccesArgument(int argc, char* argv[], string& image_path,
     x = atoi(argv[3]);
     y = atoi(argv[4]);
     border_type = atoi(argv[5]);
-    output_path = argv[6];
+    output_path = "";
+    if (argc >= 7 && argv[6] != nullptr)
+    {
+        output_path = argv[6];
+    }
 
     return 0;
 }
@@ -116,7 +121,7 @@ Mat parse_kernel_from_txt(const string& kernel_path)
 }
 
 double filter(const Mat& image, Mat& dst, const Mat& kernel, const Point& anchor,
-              int border_type, const string& output_name)
+              int border_type)
 {
     auto start = std::chrono::steady_clock::now();
     filter2D(image, dst, -1, kernel, anchor, 0, border_type);
